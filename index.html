@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سجل التحصين</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Tahoma, Arial; margin: 0; padding: 10px; background: #d9d9d9; direction: rtl; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000; opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.show { opacity: 1; }
+.modal-box {
+  background: white; border-radius: 16px;
+  box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+  padding: 24px 28px; width: 90%; max-width: 400px; text-align: center;
+  animation: modalSlideIn 0.3s ease;
+}
+@keyframes modalSlideIn {
+  from { transform: translateY(-30px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.modal-box h3 {
+  margin: 0 0 16px 0; font-size: 1.4rem; color: #333;
+  border-bottom: 2px solid #00b8d9; display: inline-block; padding-bottom: 6px;
+}
+.modal-box p { margin: 20px 0; font-size: 1rem; color: #555; line-height: 1.5; }
+.modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+.modal-btn {
+  padding: 8px 24px; border: none; border-radius: 30px;
+  font-size: 0.9rem; font-weight: bold; cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+.modal-btn.confirm { background: #2bb673; color: white; }
+.modal-btn.confirm:hover { background: #239a5f; transform: scale(1.02); }
+.modal-btn.cancel  { background: #e65050; color: white; }
+.modal-btn.cancel:hover  { background: #c93a3a; transform: scale(1.02); }
+
+/* ===== Layout ===== */
+.top-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 20px; background: #f8ffff; border: 4px solid #00b8d9;
+  padding: 8px 10px; border-radius: 4px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.top-group { display: flex; align-items: center; gap: 8px; }
+.top-group label { font-weight: bold; }
+.top-group input { width: 160px; padding: 5px; border: 2px solid #ddd; border-radius: 3px; }
+
+#dataEntryInput, #dataUpdaterInput {
+  margin-top: 3px; margin-bottom: 20px; display: block; width: 100%;
+}
+.first-row .card:first-child input { text-align: center; }
+#vaccinationDataDisplay table td, #vaccinationDataDisplay table th {
+  text-align: center; vertical-align: middle;
+}
+.main-container { display: flex; gap: 14px; align-items: flex-start; }
+.right-panel { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.first-row { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; }
+.other-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+.card {
+  background: #f8ffff; border: 4px solid #00b8d9; border-radius: 4px;
+  padding: 8px; display: flex; flex-direction: column;
+}
+.card h3 {
+  background: #00b8d9; color: #fff; padding: 6px; text-align: center;
+  margin: -8px -8px 8px -8px; font-size: 1rem;
+}
+
+.inner-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+.inner-table th, .inner-table td {
+  border: 1px solid #ccc; padding: 6px; text-align: center;
+  font-size: 12px; vertical-align: middle;
+}
+.inner-table th { background-color: #e6f7ff; font-weight: bold; }
+.inner-table input {
+  width: 70px; text-align: center; padding: 4px;
+  margin: 0 auto; display: inline-block;
+}
+
+.row { display: flex; justify-content: space-between; margin: 4px 0; }
+.row label { width: 100px; }
+input, select { padding: 4px 6px; border: 2px solid #ddd; border-radius: 3px; font-size: 13px; }
+.row input, .row select { width: 150px; }
+.card select { width: 100%; margin-bottom: 8px; }
+textarea { width: 100%; height: 70px; margin-top: 5px; font-size: 12px; padding: 5px; }
+
+.btns { display: flex; justify-content: center; gap: 12px; margin: 4px 0; flex-wrap: wrap; }
+button {
+  padding: 8px 20px; border: 0; border-radius: 5px;
+  font-weight: bold; cursor: pointer;
+}
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+.save          { background: #2bb673; color: white; }
+.update        { background: #2196F3; color: white; }
+.clear         { background: #ffb347; color: white; }
+.delete        { background: #e65050; color: white; }
+.search        { background: #00ff4b; color: #000; }
+.search-record { background: #9b59b6; color: white; }
+.all-total-btn { background: #27ae60; color: white; }
+.all-total-btn:hover { background: #1e8449; }
+
+input[readonly] { background-color: #f0f0f0; cursor: default; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  background-color: #333; color: #fff; padding: 16px 40px;
+  border-radius: 20px; font-size: 18px; font-weight: bold;
+  z-index: 9999; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  transition: opacity 0.3s ease; opacity: 0; pointer-events: none;
+}
+.toast.success { background-color: #2bb673; }
+.toast.error   { background-color: #e65050; }
+.toast.info    { background-color: #2196F3; }
+.toast.show    { opacity: 1; }
+
+.main-hidden { display: none !important; }
+
+.back-btn {
+  background: #00b8d9; color: white; padding: 8px 24px; border: 0;
+  border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px;
+}
+.back-btn:hover { background: #0099b8; }
+
+/* ===== Sub-cards ===== */
+#searchRecordCard, #allTotalCard, #maxAnimalsCard {
+  display: none; background: #f8ffff; border-radius: 4px;
+  padding: 8px; margin-top: 4px; animation: fadeInCard 0.3s ease;
+}
+#searchRecordCard { border: 4px solid #9b59b6; }
+#allTotalCard, #maxAnimalsCard { border: 4px solid #27ae60; }
+
+@keyframes fadeInCard {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#searchRecordCard h3 {
+  background: #9b59b6; color: #fff; padding: 6px; text-align: center;
+  margin: -8px -8px 12px -8px; font-size: 1rem;
+}
+#allTotalCard h3, #maxAnimalsCard h3 {
+  background: #27ae60; color: #fff; padding: 6px; text-align: center;
+  margin: -8px -8px 12px -8px; font-size: 1rem;
+}
+.search-record-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.all-total-date-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.sr-field { display: flex; flex-direction: column; gap: 3px; }
+.sr-field label { font-size: 12px; font-weight: bold; color: #333; }
+.sr-field input { width: 100%; font-size: 12px; padding: 5px 6px; border: 2px solid #ddd; border-radius: 3px; }
+
+#srResultCount, #atResultCount, #maResultCount {
+  text-align: center; font-weight: bold; margin: 6px 0; font-size: 13px;
+}
+#srResultCount { color: #9b59b6; }
+#atResultCount, #maResultCount { color: #27ae60; }
+
+#searchRecordResults, #allTotalResults, #maxAnimalsResults {
+  overflow: auto; max-height: 500px; margin-top: 8px; font-size: 12px;
+  border: 1px solid #ddd; border-radius: 3px;
+}
+#searchRecordResults table, #allTotalResults table, #maxAnimalsResults table {
+  width: 100%; border-collapse: collapse; min-width: 600px;
+}
+#searchRecordResults table thead, #allTotalResults table thead, #maxAnimalsResults table thead {
+  position: sticky; top: 0; z-index: 2;
+}
+#searchRecordResults table th { background: #9b59b6; color: white; border: 1px solid #7d3c98; padding: 6px 5px; }
+#allTotalResults table th, #maxAnimalsResults table th { background: #27ae60; color: white; border: 1px solid #1e8449; padding: 6px 5px; }
+#searchRecordResults table td, #allTotalResults table td, #maxAnimalsResults table td {
+  border: 1px solid #ddd; padding: 5px; text-align: center; white-space: nowrap;
+}
+#searchRecordResults table tr:nth-child(even) td { background: #f5eeff; }
+#allTotalResults table tr:nth-child(even) td, #maxAnimalsResults table tr:nth-child(even) td { background: #eafaf1; }
+#allTotalResults table tfoot td, #maxAnimalsResults table tfoot td {
+  background: #27ae60; color: white; font-weight: bold;
+  border: 1px solid #1e8449; padding: 6px 5px;
+  position: sticky; bottom: 0; z-index: 2;
+}
+
+/* ===== Setup overlay ===== */
+.setup-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center; z-index: 10000;
+}
+.setup-box { background: #fff; padding: 24px; border-radius: 8px; max-width: 500px; width: 90%; }
+.setup-box h3 { margin-top: 0; color: #00b8d9; }
+.setup-box input { width: 100%; padding: 8px; margin: 10px 0; border: 2px solid #ddd; border-radius: 4px; }
+.setup-box button { background: #2bb673; color: white; padding: 10px 20px; width: 100%; }
+
+@media (max-width: 1100px) {
+  .first-row, .other-cards { grid-template-columns: 1fr; }
+  .main-container { flex-direction: column; }
+  .search-record-grid, .all-total-date-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .search-record-grid, .all-total-date-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Setup ===== -->
+<div class="setup-overlay" id="setupOverlay" style="display:none;">
+  <div class="setup-box">
+    <h3>🔧 إعداد رابط الخدمة</h3>
+    <p>الصق رابط الـ Web App الخاص بـ Google Apps Script:</p>
+    <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+    <button onclick="saveApiUrl()">حفظ والمتابعة</button>
+  </div>
+</div>
+
+<!-- ===== الشريط العلوي ===== -->
+<div id="topBarMain" class="top-bar">
+  <div class="top-group">
+    <label>إدخل رقم حالة التحصين</label>
+    <input type="text" id="caseNumber">
+  </div>
+  <div>
+    <button onclick="changeApiUrl()" style="background:#7f8c8d; color:white; padding:4px 10px; font-size:11px;">⚙️ تغيير الرابط</button>
+  </div>
+</div>
+
+<div class="main-container">
+  <div class="right-panel">
+
+    <!-- الصف الأول -->
+    <div id="firstRow" class="first-row">
+      <div class="card">
+        <h3>بيانات المربي</h3>
+        <div class="row">
+          <label>رقم هاتف</label>
+          <input list="phoneList" id="phoneInput" style="width:80%;" placeholder="اختر أو اكتب رقم الهاتف">
+          <datalist id="phoneList"></datalist>
+        </div>
+        <div class="row"><label>الاسم</label><input id="nameInput" style="width:80%;"></div>
+        <div class="row"><label>رقم الحيازة</label><input id="possessionInput" style="width:80%;"></div>
+        <div class="row"><label>المنطقة</label><input id="regionInput" style="width:80%;"></div>
+        <div class="row"><label>الرقم المدني</label><input id="civilInput" style="width:80%;"></div>
+        <div class="row"><label>التاريخ</label><input type="date" id="financialDate" style="width:80%;"></div>
+      </div>
+
+      <div class="card">
+        <h3>الأمراض الوبائية</h3>
+        <table class="inner-table">
+          <thead>
+            <tr><th>نوع اللقاح</th><th>أغنام</th><th>ماعز</th><th>أبقار</th><th>جمل</th><th>خيول</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>التسمم المعوي</td>
+              <td><input type="number" id="intox_sheep"></td>
+              <td><input type="number" id="intox_goat"></td>
+              <td><input type="number" id="intox_cow" disabled></td>
+              <td><input type="number" id="intox_camel" disabled></td>
+              <td><input type="number" id="intox_horse" disabled></td>
+            </tr>
+            <tr>
+              <td>طاعون/جدري(مركب)</td>
+              <td><input type="number" id="pock_sheep"></td>
+              <td><input type="number" id="pock_goat"></td>
+              <td><input type="number" id="pock_cow" disabled></td>
+              <td><input type="number" id="pock_camel" disabled></td>
+              <td><input type="number" id="pock_horse" disabled></td>
+            </tr>
+            <tr>
+              <td>الحمى القلاعية</td>
+              <td><input type="number" id="fmd_sheep"></td>
+              <td><input type="number" id="fmd_goat"></td>
+              <td><input type="number" id="fmd_cow"></td>
+              <td><input type="number" id="fmd_camel" disabled></td>
+              <td><input type="number" id="fmd_horse" disabled></td>
+            </tr>
+            <tr>
+              <td>التهاب الجلد العقدي</td>
+              <td><input type="number" id="lumpy_sheep" disabled></td>
+              <td><input type="number" id="lumpy_goat" disabled></td>
+              <td><input type="number" id="lumpy_cow"></td>
+              <td><input type="number" id="lumpy_camel" disabled></td>
+              <td><input type="number" id="lumpy_horse" disabled></td>
+            </tr>
+            <tr>
+              <td>السعار</td>
+              <td><input type="number" id="rabies_sheep"></td>
+              <td><input type="number" id="rabies_goat"></td>
+              <td><input type="number" id="rabies_cow"></td>
+              <td><input type="number" id="rabies_camel"></td>
+              <td><input type="number" id="rabies_horse"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- باقي البطاقات -->
+    <div id="otherCards" class="other-cards">
+      <div class="card">
+        <h3>مدخل البيانات</h3>
+        <input list="dataEntryList" id="dataEntryInput" placeholder="اختر مدخل البيانات">
+        <datalist id="dataEntryList"></datalist>
+        <h3>مدخل البيانات (التحديث)</h3>
+        <input list="dataUpdaterList" id="dataUpdaterInput" placeholder="اختر مدخل البيانات للتحديث">
+        <datalist id="dataUpdaterList"></datalist>
+        <h3>الملاحظات</h3>
+        <textarea id="notes" placeholder="أضف ملاحظات إضافية هنا..."></textarea>
+      </div>
+
+      <div class="card" style="grid-column:span 2;">
+        <h3>بيانات التحصين</h3>
+        <div id="vaccinationDataDisplay" style="overflow-x:auto; max-height:200px; margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- شريط التحكم -->
+    <div id="controlBar" class="top-bar" style="justify-content:center; gap:12px; background:#eef7ff;">
+      <button class="save"   id="saveBtn">حفظ</button>
+      <button class="update" id="updateBtn">تحديث</button>
+      <button class="clear"  id="clearBtn">مسح</button>
+      <button class="delete" id="deleteBtn">حذف البيانات</button>
+      <button class="search" id="searchBtn">بحث</button>
+      <button class="search-record" id="searchRecordBtn">البحث في سجل التحصين</button>
+      <button class="all-total-btn" id="allTotalBtn">إجمالي عدد الجرعات</button>
+      <button class="all-total-btn" id="maxAnimalsBtn">عدد الحيوانات المحصنة</button>
+    </div>
+
+    <input type="hidden" id="copyingdata">
+
+    <!-- بطاقة البحث -->
+    <div id="searchRecordCard">
+      <h3>البحث في سجل التحصين</h3>
+      <div class="search-record-grid">
+        <div class="sr-field"><label>رقم الحالة</label><input type="text" id="srCaseNumber"></div>
+        <div class="sr-field"><label>رقم الهاتف</label><input type="text" id="srPhone"></div>
+        <div class="sr-field"><label>الاسم</label><input type="text" id="srName"></div>
+        <div class="sr-field"><label>رقم الحيازة</label><input type="text" id="srPossession"></div>
+        <div class="sr-field"><label>المنطقة</label><input type="text" id="srRegion"></div>
+        <div class="sr-field"><label>الرقم المدني</label><input type="text" id="srCivil"></div>
+        <div class="sr-field"><label>من تاريخ</label><input type="date" id="srDateFrom"></div>
+        <div class="sr-field"><label>إلى تاريخ</label><input type="date" id="srDateTo"></div>
+      </div>
+      <div class="btns">
+        <button class="back-btn" id="srBackBtn">← رجوع</button>
+        <button class="search-record" id="srSearchBtn">بحث</button>
+        <button class="clear" id="srClearBtn">مسح البحث</button>
+      </div>
+      <div id="srResultCount"></div>
+      <div id="searchRecordResults"></div>
+    </div>
+
+    <!-- بطاقة الإجمالي -->
+    <div id="allTotalCard">
+      <h3>إجمالي عدد الجرعات</h3>
+      <div class="all-total-date-grid">
+        <div class="sr-field"><label>من تاريخ</label><input type="date" id="atDateFrom"></div>
+        <div class="sr-field"><label>إلى تاريخ</label><input type="date" id="atDateTo"></div>
+      </div>
+      <div class="btns">
+        <button class="back-btn" id="atBackBtn">← رجوع</button>
+        <button class="all-total-btn" id="atSearchBtn">عرض الإجمالي</button>
+        <button class="clear" id="atClearBtn">مسح</button>
+      </div>
+      <div id="atResultCount"></div>
+      <div id="allTotalResults"></div>
+    </div>
+
+    <!-- بطاقة عدد الحيوانات المحصنة -->
+    <div id="maxAnimalsCard">
+      <h3>عدد الحيوانات المحصنة</h3>
+      <div class="all-total-date-grid">
+        <div class="sr-field"><label>رقم الهاتف (اختياري)</label><input type="text" id="maPhone"></div>
+        <div class="sr-field"><label>من تاريخ</label><input type="date" id="maDateFrom"></div>
+        <div class="sr-field"><label>إلى تاريخ</label><input type="date" id="maDateTo"></div>
+      </div>
+      <div class="btns">
+        <button class="back-btn" id="maBackBtn">← رجوع</button>
+        <button class="all-total-btn" id="maSearchBtn">عرض البيانات</button>
+        <button class="clear" id="maClearBtn">مسح</button>
+      </div>
+      <div id="maResultCount"></div>
+      <div id="maxAnimalsResults"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ===================================================
+// API Setup
+// ===================================================
+let API_URL = localStorage.getItem("immunization_api_url") || "";
+if (!API_URL) document.getElementById("setupOverlay").style.display = "flex";
+
+function saveApiUrl() {
+  const url = document.getElementById("apiUrlInput").value.trim();
+  if (!url) { alert("الرجاء إدخال الرابط"); return; }
+  localStorage.setItem("immunization_api_url", url);
+  API_URL = url;
+  document.getElementById("setupOverlay").style.display = "none";
+  init();
+}
+function changeApiUrl() {
+  document.getElementById("apiUrlInput").value = API_URL;
+  document.getElementById("setupOverlay").style.display = "flex";
+}
+
+async function callApi(action, payload = {}) {
+  if (!API_URL) throw new Error("رابط الخدمة غير مُعدّ");
+  const body = JSON.stringify(Object.assign({ action }, payload));
+  const response = await fetch(API_URL, {
+    method: "POST",
+    mode: "cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: body,
+    redirect: "follow",
+  });
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  return await response.json();
+}
+
+// ===================================================
+// UI Helpers
+// ===================================================
+let isSaving = false;
+
+function showMessage(message, isError, type) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  if (type === 'info')  toast.classList.add('info');
+  else if (isError)     toast.classList.add('error');
+  else                  toast.classList.add('success');
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+function showConfirm(message, onConfirm) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML =
+    '<div class="modal-box">' +
+      '<h3>تأكيد العملية</h3>' +
+      '<p>' + message + '</p>' +
+      '<div class="modal-buttons">' +
+        '<button class="modal-btn confirm">نعم</button>' +
+        '<button class="modal-btn cancel">إلغاء</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.classList.add('show'), 10);
+
+  const close = () => {
+    overlay.classList.remove('show');
+    setTimeout(() => overlay.remove(), 300);
+  };
+  overlay.querySelector('.confirm').onclick = () => { close(); onConfirm(); };
+  overlay.querySelector('.cancel').onclick  = close;
+  overlay.onclick = e => { if (e.target === overlay) close(); };
+}
+
+function safeSetValue(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = (value !== undefined && value !== null) ? value : '';
+}
+function getValue(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+// ===================================================
+// Data fetching
+// ===================================================
+async function loadDropdowns() {
+  try {
+    const [phonesRes, entriesRes] = await Promise.all([
+      callApi("getPhoneNumbers"),
+      callApi("getDataEntryOptions"),
+    ]);
+
+    if (phonesRes.success) {
+      const dl = document.getElementById('phoneList');
+      dl.innerHTML = '';
+      phonesRes.data.sort().forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p; dl.appendChild(opt);
+      });
+    }
+
+    if (entriesRes.success) {
+      const dl1 = document.getElementById('dataEntryList');
+      const dl2 = document.getElementById('dataUpdaterList');
+      dl1.innerHTML = ''; dl2.innerHTML = '';
+      entriesRes.data.sort().forEach(e => {
+        const o1 = document.createElement('option'); o1.value = e; dl1.appendChild(o1);
+        const o2 = document.createElement('option'); o2.value = e; dl2.appendChild(o2);
+      });
+    }
+  } catch (err) {
+    showMessage("خطأ في تحميل القوائم: " + err.message, true);
+  }
+}
+
+async function fetchBreederData(phone) {
+  if (!phone) {
+    ['nameInput','possessionInput','regionInput','civilInput'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    return;
+  }
+  ['nameInput','possessionInput','regionInput','civilInput'].forEach(id => {
+    document.getElementById(id).value = 'جاري الجلب...';
+  });
+  try {
+    const res = await callApi("getBreederData", { phone });
+    if (res.success) {
+      safeSetValue('nameInput', res.name);
+      safeSetValue('possessionInput', res.possession);
+      safeSetValue('regionInput', res.region);
+      safeSetValue('civilInput', res.civil);
+    } else {
+      showMessage(res.message || 'لم يتم العثور على المربي', true);
+      ['nameInput','possessionInput','regionInput','civilInput'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    }
+  } catch (err) {
+    showMessage("خطأ في جلب بيانات المربي: " + err.message, true);
+  }
+}
+
+async function fetchVaccinationDataByPhone(phone) {
+  const container = document.getElementById('vaccinationDataDisplay');
+  if (!phone) { container.innerHTML = ''; return; }
+  container.innerHTML = '<p style="text-align:center;font-weight:bold;">جاري جلب البيانات...</p>';
+  try {
+    const res = await callApi("getVaccinationDataByPhone", { phone });
+    if (!res.success || !res.rows || res.rows.length === 0) {
+      container.innerHTML = '<p style="text-align:center;color:#777;">لا توجد بيانات تحصين للمربي</p>';
+      return;
+    }
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr>';
+    (res.headers || []).forEach(h => {
+      html += '<th style="border:1px solid #ccc;padding:4px;background:#e6f7ff;">' + (h || '') + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+    res.rows.forEach(row => {
+      html += '<tr>';
+      row.forEach(c => { html += '<td style="border:1px solid #ccc;padding:4px;">' + (c || '') + '</td>'; });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = '<p style="color:red;">خطأ: ' + err.message + '</p>';
+  }
+}
+
+// ===================================================
+// Form helpers
+// ===================================================
+function fillFormWithData(data) {
+  const fields = [
+    'caseNumber','phoneInput','nameInput','possessionInput','regionInput','civilInput',
+    'dataUpdaterInput','dataEntryInput','notes',
+    'intox_sheep','intox_goat','pock_sheep','pock_goat',
+    'fmd_sheep','fmd_goat','fmd_cow','lumpy_cow',
+    'rabies_sheep','rabies_goat','rabies_cow','rabies_camel','rabies_horse'
+  ];
+  const map = {
+    caseNumber: 'caseNumber', phoneInput: 'phone', nameInput: 'name',
+    possessionInput: 'possession', regionInput: 'region', civilInput: 'civil',
+    dataUpdaterInput: 'dataUpdater', dataEntryInput: 'dataEntry', notes: 'notes',
+    intox_sheep: 'intox_sheep', intox_goat: 'intox_goat',
+    pock_sheep: 'pock_sheep', pock_goat: 'pock_goat',
+    fmd_sheep: 'fmd_sheep', fmd_goat: 'fmd_goat', fmd_cow: 'fmd_cow',
+    lumpy_cow: 'lumpy_cow',
+    rabies_sheep: 'rabies_sheep', rabies_goat: 'rabies_goat',
+    rabies_cow: 'rabies_cow', rabies_camel: 'rabies_camel', rabies_horse: 'rabies_horse'
+  };
+  fields.forEach(id => safeSetValue(id, data[map[id]]));
+  showMessage('تم تحميل بيانات الحالة بنجاح', false);
+}
+
+function clearForm() {
+  const today = new Date().toLocaleDateString('en-CA');
+  const fin = document.getElementById('financialDate');
+  if (fin) fin.value = today;
+
+  ['phoneInput','nameInput','possessionInput','regionInput','civilInput',
+   'dataEntryInput','dataUpdaterInput','notes','copyingdata',
+   'intox_sheep','intox_goat','pock_sheep','pock_goat',
+   'fmd_sheep','fmd_goat','fmd_cow','lumpy_cow',
+   'rabies_sheep','rabies_goat','rabies_cow','rabies_camel','rabies_horse'
+  ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+  const vd = document.getElementById('vaccinationDataDisplay');
+  if (vd) vd.innerHTML = '';
+  showMessage('تم مسح جميع الحقول', false);
+}
+
+function collectFormData() {
+  return {
+    caseNumber:    getValue('caseNumber'),
+    phone:         getValue('phoneInput'),
+    name:          getValue('nameInput'),
+    possession:    getValue('possessionInput'),
+    region:        getValue('regionInput'),
+    civil:         getValue('civilInput'),
+    intox_sheep:   getValue('intox_sheep'),
+    intox_goat:    getValue('intox_goat'),
+    pock_sheep:    getValue('pock_sheep'),
+    pock_goat:     getValue('pock_goat'),
+    fmd_sheep:     getValue('fmd_sheep'),
+    fmd_goat:      getValue('fmd_goat'),
+    fmd_cow:       getValue('fmd_cow'),
+    lumpy_cow:     getValue('lumpy_cow'),
+    lumpy_sheep:   getValue('lumpy_sheep'),
+    lumpy_goat:    getValue('lumpy_goat'),
+    lumpy_camel:   getValue('lumpy_camel'),
+    rabies_sheep:  getValue('rabies_sheep'),
+    rabies_goat:   getValue('rabies_goat'),
+    rabies_cow:    getValue('rabies_cow'),
+    rabies_camel:  getValue('rabies_camel'),
+    rabies_horse:  getValue('rabies_horse'),
+    notes:         getValue('notes'),
+    dataEntry:     getValue('dataEntryInput'),
+    dataUpdater:   getValue('dataUpdaterInput'),
+    financialDate: getValue('financialDate'),
+  };
+}
+
+const DISEASE_FIELDS = [
+  'intox_sheep','intox_goat','pock_sheep','pock_goat',
+  'fmd_sheep','fmd_goat','fmd_cow','lumpy_cow',
+  'rabies_sheep','rabies_goat','rabies_cow','rabies_camel','rabies_horse'
+];
+function anyDiseaseFilled() {
+  return DISEASE_FIELDS.some(id => {
+    const v = getValue(id);
+    return v !== '' && !isNaN(v) && Number(v) !== 0;
+  });
+}
+
+// ===================================================
+// CRUD
+// ===================================================
+async function saveData() {
+  if (isSaving) return;
+  if (!getValue('phoneInput'))     { showMessage('الرجاء إدخال رقم الهاتف', true); return; }
+  if (!getValue('dataEntryInput')) { showMessage('الرجاء اختيار مدخل البيانات', true); return; }
+  if (getValue('copyingdata') !== '') { showMessage('لا يمكن الحفظ في وضع التحديث', true); return; }
+  if (!anyDiseaseFilled()) { showMessage('يجب تعبئة مربع واحد على الأقل في جدول الأمراض', true); return; }
+
+  isSaving = true;
+  const btn = document.getElementById('saveBtn');
+  const orig = btn.textContent;
+  btn.textContent = 'جاري الحفظ...';
+  btn.disabled = true;
+  try {
+    const res = await callApi("saveData", { data: collectFormData() });
+    if (res.success) { showMessage('تم حفظ البيانات بنجاح', false); clearForm(); }
+    else showMessage('خطأ: ' + res.message, true);
+  } catch (err) {
+    showMessage('خطأ في الاتصال: ' + err.message, true);
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+    isSaving = false;
+  }
+}
+
+async function updateData() {
+  if (!getValue('caseNumber'))        { showMessage('الرجاء إدخال رقم الحالة', true); return; }
+  if (!getValue('phoneInput'))        { showMessage('الرجاء إدخال رقم الهاتف', true); return; }
+  if (!getValue('dataUpdaterInput'))  { showMessage('الرجاء اختيار مدخل البيانات (التحديث)', true); return; }
+  if (!anyDiseaseFilled())            { showMessage('يجب تعبئة مربع واحد على الأقل في جدول الأمراض', true); return; }
+
+  const btn = document.getElementById('updateBtn');
+  const orig = btn.textContent;
+  btn.textContent = 'جاري التحديث...';
+  btn.disabled = true;
+  try {
+    const res = await callApi("updateData", { data: collectFormData() });
+    if (res.success) {
+      showMessage('تم التحديث بنجاح', false);
+      clearForm();
+      document.getElementById('caseNumber').value = '';
+    } else showMessage('خطأ: ' + res.message, true);
+  } catch (err) {
+    showMessage('خطأ في الاتصال: ' + err.message, true);
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+async function searchCase() {
+  const caseNum = getValue('caseNumber');
+  if (!caseNum) { showMessage('الرجاء إدخال رقم الحالة', true); return; }
+  showMessage('جاري جلب البيانات...', false, 'info');
+  try {
+    const res = await callApi("searchCaseData", { caseNumber: caseNum });
+    if (res.success) {
+      fillFormWithData(res);
+      if (res.phone) fetchVaccinationDataByPhone(res.phone);
+    } else {
+      showMessage(res.message, true);
+    }
+  } catch (err) {
+    showMessage('خطأ: ' + err.message, true);
+  }
+}
+
+async function deleteCase() {
+  const caseNum = getValue('caseNumber');
+  if (!caseNum) { showMessage('الرجاء إدخال رقم الحالة', true); return; }
+  showConfirm('هل أنت متأكد من حذف الحالة رقم ' + caseNum + '؟', async () => {
+    const btn = document.getElementById('deleteBtn');
+    const orig = btn.textContent;
+    btn.textContent = 'جاري الحذف...';
+    btn.disabled = true;
+    try {
+      const res = await callApi("deleteData", { caseNumber: caseNum });
+      if (res.success) {
+        showMessage('تم الحذف بنجاح', false);
+        clearForm();
+        document.getElementById('caseNumber').value = '';
+      } else showMessage(res.message, true);
+    } catch (err) {
+      showMessage('خطأ: ' + err.message, true);
+    } finally {
+      btn.textContent = orig;
+      btn.disabled = false;
+    }
+  });
+}
+
+// ===================================================
+// View management
+// ===================================================
+const MAIN_ELEMENTS = ['topBarMain','firstRow','otherCards','controlBar'];
+const CARDS = ['searchRecordCard','allTotalCard','maxAnimalsCard'];
+
+function hideAllCards() {
+  CARDS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+}
+function showMainView() {
+  hideAllCards();
+  MAIN_ELEMENTS.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('main-hidden'); });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showSubView(cardId) {
+  MAIN_ELEMENTS.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('main-hidden'); });
+  hideAllCards();
+  document.getElementById(cardId).style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===================================================
+// Search records
+// ===================================================
+function clearSearchRecordForm() {
+  ['srCaseNumber','srPhone','srName','srPossession','srRegion','srCivil','srDateFrom','srDateTo']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('searchRecordResults').innerHTML = '';
+  document.getElementById('srResultCount').textContent = '';
+}
+
+async function doSearchVaccinationRecords() {
+  const filters = {
+    caseNumber: getValue('srCaseNumber'),
+    phone:      getValue('srPhone'),
+    name:       getValue('srName'),
+    possession: getValue('srPossession'),
+    region:     getValue('srRegion'),
+    civil:      getValue('srCivil'),
+    dateFrom:   getValue('srDateFrom'),
+    dateTo:     getValue('srDateTo'),
+  };
+  if (!Object.values(filters).some(v => v !== '')) {
+    showMessage('الرجاء إدخال معيار بحث واحد على الأقل', true);
+    return;
+  }
+
+  const btn = document.getElementById('srSearchBtn');
+  const orig = btn.textContent;
+  btn.textContent = 'جاري البحث...';
+  btn.disabled = true;
+  const div = document.getElementById('searchRecordResults');
+  div.innerHTML = '<p style="text-align:center;padding:12px;">جاري البحث...</p>';
+  document.getElementById('srResultCount').textContent = '';
+
+  try {
+    const res = await callApi("searchVaccinationRecords", { filters });
+    if (!res.success || !res.rows || res.rows.length === 0) {
+      div.innerHTML = '<p style="text-align:center;color:#e65050;padding:12px;">لا توجد نتائج</p>';
+      return;
+    }
+    document.getElementById('srResultCount').textContent = 'عدد النتائج: ' + res.rows.length + ' سجل';
+    let html = '<table><thead><tr>';
+    (res.headers || []).forEach(h => { html += '<th>' + (h || '') + '</th>'; });
+    html += '</tr></thead><tbody>';
+    res.rows.forEach(row => {
+      html += '<tr>' + row.map(c => '<td>' + (c || '') + '</td>').join('') + '</tr>';
+    });
+    html += '</tbody></table>';
+    div.innerHTML = html;
+  } catch (err) {
+    div.innerHTML = '<p style="color:red;text-align:center;padding:12px;">خطأ: ' + err.message + '</p>';
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+// ===================================================
+// All total
+// ===================================================
+function clearAllTotalForm() {
+  ['atDateFrom','atDateTo'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('allTotalResults').innerHTML = '';
+  document.getElementById('atResultCount').textContent = '';
+}
+
+async function doGetAllTotal() {
+  const filters = { dateFrom: getValue('atDateFrom'), dateTo: getValue('atDateTo') };
+  const btn = document.getElementById('atSearchBtn');
+  const orig = btn.textContent;
+  btn.textContent = 'جاري الحساب...';
+  btn.disabled = true;
+
+  const div = document.getElementById('allTotalResults');
+  div.innerHTML = '<p style="text-align:center;padding:12px;">جاري الجلب...</p>';
+  document.getElementById('atResultCount').textContent = '';
+
+  try {
+    const res = await callApi("getAllTotalVaccinatedAnimals", { filters });
+    if (!res.success || !res.rows || res.rows.length === 0) {
+      div.innerHTML = '<p style="text-align:center;color:#e65050;padding:12px;">لا توجد بيانات</p>';
+      return;
+    }
+    document.getElementById('atResultCount').textContent = 'إجمالي السجلات: ' + res.recordCount;
+
+    let html = '<table><thead><tr><th>م</th><th>نوع اللقاح</th><th>أغنام</th><th>ماعز</th><th>أبقار</th><th>جمل</th><th>خيول</th><th>الإجمالي</th></tr></thead><tbody>';
+    res.rows.forEach((row, i) => {
+      html += '<tr><td>' + (i + 1) + '</td>' + row.map(c => '<td>' + (c || '0') + '</td>').join('') + '</tr>';
+    });
+    html += '</tbody>';
+    if (res.totals) {
+      html += '<tfoot><tr><td colspan="2">الإجمالي الكلي</td>';
+      res.totals.forEach(t => { html += '<td>' + (t || 0) + '</td>'; });
+      html += '</tr></tfoot>';
+    }
+    html += '</table>';
+    div.innerHTML = html;
+  } catch (err) {
+    div.innerHTML = '<p style="color:red;text-align:center;">خطأ: ' + err.message + '</p>';
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+// ===================================================
+// Max animals per breeder
+// ===================================================
+function clearMaxAnimalsForm() {
+  ['maPhone','maDateFrom','maDateTo'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('maxAnimalsResults').innerHTML = '';
+  document.getElementById('maResultCount').textContent = '';
+}
+
+async function doGetMaxAnimals() {
+  const filters = {
+    phone: getValue('maPhone'),
+    dateFrom: getValue('maDateFrom'),
+    dateTo: getValue('maDateTo'),
+  };
+  const btn = document.getElementById('maSearchBtn');
+  const orig = btn.textContent;
+  btn.textContent = 'جاري البحث...';
+  btn.disabled = true;
+
+  const div = document.getElementById('maxAnimalsResults');
+  div.innerHTML = '<p style="text-align:center;padding:12px;">جاري الجلب...</p>';
+  document.getElementById('maResultCount').textContent = '';
+
+  try {
+    const res = await callApi("getMaxAnimalsPerBreeder", { filters });
+    if (!res.success || !res.rows || res.rows.length === 0) {
+      div.innerHTML = '<p style="text-align:center;color:#e65050;padding:12px;">لا توجد بيانات</p>';
+      return;
+    }
+    document.getElementById('maResultCount').textContent = 'عدد المربين: ' + res.recordCount;
+
+    let html = '<table><thead><tr>';
+    (res.headers || []).forEach(h => { html += '<th>' + (h || '') + '</th>'; });
+    html += '</tr></thead><tbody>';
+    res.rows.forEach(row => {
+      html += '<tr>' + row.map(c => '<td>' + (c !== undefined && c !== null ? c : '') + '</td>').join('') + '</tr>';
+    });
+    html += '</tbody>';
+    if (res.totals && res.totals.length) {
+      html += '<tfoot><tr><td colspan="2">الإجمالي الكلي</td>';
+      res.totals.forEach(t => { html += '<td>' + (t || 0) + '</td>'; });
+      html += '</tr></tfoot>';
+    }
+    html += '</table>';
+    div.innerHTML = html;
+  } catch (err) {
+    div.innerHTML = '<p style="color:red;text-align:center;">خطأ: ' + err.message + '</p>';
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+// ===================================================
+// Init
+// ===================================================
+function bindEvents() {
+  // أزرار رئيسية
+  document.getElementById('saveBtn').onclick   = saveData;
+  document.getElementById('clearBtn').onclick  = clearForm;
+  document.getElementById('updateBtn').onclick = updateData;
+  document.getElementById('deleteBtn').onclick = deleteCase;
+  document.getElementById('searchBtn').onclick = searchCase;
+
+  // أزرار التبديل
+  document.getElementById('searchRecordBtn').onclick = () => showSubView('searchRecordCard');
+  document.getElementById('allTotalBtn').onclick     = () => showSubView('allTotalCard');
+  document.getElementById('maxAnimalsBtn').onclick   = () => showSubView('maxAnimalsCard');
+
+  // أزرار البطاقة الفرعية
+  document.getElementById('srBackBtn').onclick   = showMainView;
+  document.getElementById('srSearchBtn').onclick = doSearchVaccinationRecords;
+  document.getElementById('srClearBtn').onclick  = clearSearchRecordForm;
+
+  document.getElementById('atBackBtn').onclick   = showMainView;
+  document.getElementById('atSearchBtn').onclick = doGetAllTotal;
+  document.getElementById('atClearBtn').onclick  = clearAllTotalForm;
+
+  document.getElementById('maBackBtn').onclick   = showMainView;
+  document.getElementById('maSearchBtn').onclick = doGetMaxAnimals;
+  document.getElementById('maClearBtn').onclick  = clearMaxAnimalsForm;
+
+  // حقل الهاتف
+  document.getElementById('phoneInput').onchange = function() {
+    fetchBreederData(this.value);
+    fetchVaccinationDataByPhone(this.value);
+  };
+
+  // رقم الحالة
+  const caseInput = document.getElementById('caseNumber');
+  caseInput.addEventListener('input', function() {
+    const v = this.value.trim();
+    if (v) document.getElementById('copyingdata').value = v;
+  });
+  caseInput.onchange = function() {
+    if (this.value.trim()) searchCase();
+  };
+  caseInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') { e.preventDefault(); searchCase(); }
+  });
+
+  // Enter في حقول البحث
+  ['srCaseNumber','srPhone','srName','srPossession','srRegion','srCivil','srDateFrom','srDateTo']
+    .forEach(id => {
+      document.getElementById(id).addEventListener('keypress', e => {
+        if (e.key === 'Enter') { e.preventDefault(); doSearchVaccinationRecords(); }
+      });
+    });
+  ['atDateFrom','atDateTo'].forEach(id => {
+    document.getElementById(id).addEventListener('keypress', e => {
+      if (e.key === 'Enter') { e.preventDefault(); doGetAllTotal(); }
+    });
+  });
+  ['maPhone','maDateFrom','maDateTo'].forEach(id => {
+    document.getElementById(id).addEventListener('keypress', e => {
+      if (e.key === 'Enter') { e.preventDefault(); doGetMaxAnimals(); }
+    });
+  });
+}
+
+function init() {
+  bindEvents();
+  const today = new Date().toLocaleDateString('en-CA');
+  const fin = document.getElementById('financialDate');
+  if (fin) fin.value = today;
+  if (API_URL) loadDropdowns();
+}
+
+if (API_URL) init();
+else bindEvents();
+</script>
+</body>
+</html>
