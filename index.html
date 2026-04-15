@@ -487,8 +487,8 @@ function getValue(id) {
 async function loadDropdowns() {
   try {
     const [phonesRes, entriesRes] = await Promise.all([
-      callApi("getPhoneNumbers"),
-      callApi("getDataEntryOptions"),
+      callApi("getPhoneNumbersvacc"),
+      callApi("getDataEntryOptionsvacc"),
     ]);
 
     if (phonesRes.success) {
@@ -525,7 +525,7 @@ async function fetchBreederData(phone) {
     document.getElementById(id).value = 'جاري الجلب...';
   });
   try {
-    const res = await callApi("getBreederData", { phone });
+    const res = await callApi("getBreederDatavacc", { phone });
     if (res.success) {
       safeSetValue('nameInput', res.name);
       safeSetValue('possessionInput', res.possession);
@@ -547,7 +547,7 @@ async function fetchVaccinationDataByPhone(phone) {
   if (!phone) { container.innerHTML = ''; return; }
   container.innerHTML = '<p style="text-align:center;font-weight:bold;">جاري جلب البيانات...</p>';
   try {
-    const res = await callApi("getVaccinationDataByPhone", { phone });
+    const res = await callApi("getVaccinationDataByPhonevacc", { phone });
     if (!res.success || !res.rows || res.rows.length === 0) {
       container.innerHTML = '<p style="text-align:center;color:#777;">لا توجد بيانات تحصين للمربي</p>';
       return;
@@ -694,7 +694,7 @@ async function updateData() {
   btn.textContent = 'جاري التحديث...';
   btn.disabled = true;
   try {
-    const res = await callApi("updateData", { data: collectFormData() });
+    const res = await callApi("updateDatavacc", { data: collectFormData() });
     if (res.success) {
       showMessage('تم التحديث بنجاح', false);
       clearForm();
@@ -713,7 +713,7 @@ async function searchCase() {
   if (!caseNum) { showMessage('الرجاء إدخال رقم الحالة', true); return; }
   showMessage('جاري جلب البيانات...', false, 'info');
   try {
-    const res = await callApi("searchCaseData", { caseNumber: caseNum });
+    const res = await callApi("searchCaseDatavacc", { caseNumber: caseNum });
     if (res.success) {
       fillFormWithData(res);
       if (res.phone) fetchVaccinationDataByPhone(res.phone);
@@ -734,7 +734,7 @@ async function deleteCase() {
     btn.textContent = 'جاري الحذف...';
     btn.disabled = true;
     try {
-      const res = await callApi("deleteData", { caseNumber: caseNum });
+      const res = await callApi("deleteDatavacc", { caseNumber: caseNum });
       if (res.success) {
         showMessage('تم الحذف بنجاح', false);
         clearForm();
@@ -805,7 +805,7 @@ async function doSearchVaccinationRecords() {
   document.getElementById('srResultCount').textContent = '';
 
   try {
-    const res = await callApi("searchVaccinationRecords", { filters });
+    const res = await callApi("searchVaccinationRecordsvacc", { filters });
     if (!res.success || !res.rows || res.rows.length === 0) {
       div.innerHTML = '<p style="text-align:center;color:#e65050;padding:12px;">لا توجد نتائج</p>';
       return;
@@ -848,7 +848,7 @@ async function doGetAllTotal() {
   document.getElementById('atResultCount').textContent = '';
 
   try {
-    const res = await callApi("getAllTotalVaccinatedAnimals", { filters });
+    const res = await callApi("getAllTotalVaccinatedAnimalsvacc", { filters });
     if (!res.success || !res.rows || res.rows.length === 0) {
       div.innerHTML = '<p style="text-align:center;color:#e65050;padding:12px;">لا توجد بيانات</p>';
       return;
@@ -900,7 +900,7 @@ async function doGetMaxAnimals() {
   document.getElementById('maResultCount').textContent = '';
 
   try {
-    const res = await callApi("getMaxAnimalsPerBreeder", { filters });
+    const res = await callApi("getMaxAnimalsPerBreedervacc", { filters });
     if (!res.success || !res.rows || res.rows.length === 0) {
       div.innerHTML = '<p style="text-align:center;color:#e65050;padding:12px;">لا توجد بيانات</p>';
       return;
