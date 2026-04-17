@@ -298,6 +298,22 @@ function saveApiUrl() {
   document.getElementById("setupOverlay").style.display = "none";
   init();
 }
+  function selectCaseFromSearch(caseNumber) {
+  // العودة للواجهة الرئيسية
+  showMainView();
+  
+  // وضع رقم الحالة في الحقل العلوي
+  document.getElementById('caseNumber').value = caseNumber;
+  
+  // تحديث حقل copyingdata (المخفي) إذا كان مستخدماً للتحديث
+  document.getElementById('copyingdata').value = caseNumber;
+  
+  // تشغيل دالة البحث لجلب البيانات
+  searchCase();
+  
+  // رسالة تأكيد (اختياري)
+  showMessage('تم تحميل الحالة رقم: ' + caseNumber, false, 'info');
+}
 function changeApiUrl() {
   document.getElementById("apiUrlInput").value = API_URL;
   document.getElementById("setupOverlay").style.display = "flex";
@@ -695,14 +711,25 @@ async function doSearchVaccinationRecords() {
       {idx:22,bg:''},{idx:23,bg:''},{idx:24,bg:''},{idx:25,bg:''}
     ];
 
-    res.rows.forEach(function(row, index) {
+     res.rows.forEach(function(row, index) {
+      var caseNum = row[0]; // رقم الحالة في العمود الأول
       var rowBg = (index % 2 !== 0) ? ' background:#f5eeff;' : '';
-      html += '<tr style="' + rowBg + '">';
-      html += '<td style="border:1px solid #ddd;padding:5px;">' + (index + 1) + '</td>';
+      
+            html += '<tr style="' + rowBg + ' cursor:pointer;" onclick="selectCaseFromSearch(\'' + caseNum + '\')" title="انقر لتحميل هذه الحالة">';
+      
+      // المسلسل
+      html += '<td style="border:1px solid #ddd;padding:5px;text-align:center;">' + (index + 1) + '</td>';
+      
+      // رقم الحالة - قابل للنقر مع تنسيق مميز
+      html += '<td style="border:1px solid #ddd;padding:5px;text-align:center;cursor:pointer;color:#9b59b6;font-weight:bold;text-decoration:underline;" ' +
+              'onclick="selectCaseFromSearch(\'' + caseNum + '\')" title="انقر لتحميل الحالة">' + 
+              caseNum + '</td>';
+      
+      // باقي الأعمدة حسب colOrder
       colOrder.forEach(function(col) {
         var val = (row[col.idx] !== null && row[col.idx] !== undefined && row[col.idx] !== '') ? row[col.idx] : '-';
         var bg = col.bg ? 'background:' + col.bg + ';' : '';
-        html += '<td style="border:1px solid #ddd;padding:5px;' + bg + '">' + val + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:5px;text-align:center;' + bg + '">' + val + '</td>';
       });
       html += '</tr>';
     });
