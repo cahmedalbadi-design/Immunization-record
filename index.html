@@ -209,6 +209,7 @@ input[readonly] { background-color: #f0f0f0; }
     </div>
 
     <div id="controlBar" class="top-bar" style="justify-content:center; gap:12px; background:#eef7ff;">
+      <button id="backToMainBtn">الرجوع إلى القائمة الرئيسية</button>
       <button class="save" id="saveBtn">حفظ</button>
       <button class="update" id="updateBtn">تحديث</button>
       <button class="clear" id="clearBtn">مسح</button>
@@ -282,6 +283,9 @@ input[readonly] { background-color: #f0f0f0; }
 </div>
 
 <script>
+  document.getElementById("backToMainBtn").onclick = function() {
+  window.location.href = "https://forms.gle/MRVJCAncSy2FpDCd8";
+};
 "use strict";
 
 // ===================================================
