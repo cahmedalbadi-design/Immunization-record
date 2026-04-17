@@ -23,6 +23,31 @@ body { font-family: Tahoma, Arial; margin: 0; padding: 10px; background: #d9d9d9
 @keyframes modalSlideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .modal-box h3 { margin: 0 0 16px 0; font-size: 1.4rem; color: #333; border-bottom: 2px solid #00b8d9; display: inline-block; padding-bottom: 6px; }
 .modal-box p { margin: 20px 0; font-size: 1rem; color: #555; }
+.modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سجل التحصين</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Tahoma, Arial; margin: 0; padding: 10px; background: #d9d9d9; direction: rtl; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000; opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.show { opacity: 1; }
+.modal-box {
+  background: white; border-radius: 16px; box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+  padding: 24px 28px; width: 90%; max-width: 400px; text-align: center;
+  animation: modalSlideIn 0.3s ease;
+}
+@keyframes modalSlideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-box h3 { margin: 0 0 16px 0; font-size: 1.4rem; color: #333; border-bottom: 2px solid #00b8d9; display: inline-block; padding-bottom: 6px; }
+.modal-box p { margin: 20px 0; font-size: 1rem; color: #555; }
 .modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
 .modal-btn { padding: 8px 24px; border: none; border-radius: 30px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
 .modal-btn.confirm { background: #2bb673; color: white; }
@@ -87,14 +112,6 @@ input[readonly] { background-color: #f0f0f0; }
 .main-hidden { display: none !important; }
 
 /* Sub-cards */
-  #maxAnimalsResults {
-  overflow: auto;
-  max-height: calc(100vh - 180px);  /* ← كامل الارتفاع ناقص المساحات العلوية */
-  margin-top: 8px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-}
 #searchRecordCard, #allTotalCard, #maxAnimalsCard {
   display: none; border-radius: 4px; padding: 8px; margin-top: 4px;
   animation: fadeInCard 0.3s ease;
@@ -103,7 +120,7 @@ input[readonly] { background-color: #f0f0f0; }
 #searchRecordCard { background: #f8ffff; border: 4px solid #9b59b6; }
 #searchRecordCard h3 { background: #9b59b6; color: #fff; padding: 6px; text-align: center; margin: -8px -8px 12px -8px; font-size: 1rem; }
 #allTotalCard { background: #fff3c9; border: 4px solid #27ae60; }
-#allTotalCard h3 { background: #27ae60; color: #fff; padding: 6px; text-align: center; margin: -8px -8px 12px -8px; font-size: 3rem; }
+#allTotalCard h3 { background: #27ae60; color: #fff; padding: 6px; text-align: center; margin: -8px -8px 12px -8px; font-size: 1rem; }
 #maxAnimalsCard { background: #f8ffff; border: 4px solid #27ae60; }
 #maxAnimalsCard h3 { background: #27ae60; color: #fff; padding: 6px; text-align: center; margin: -8px -8px 12px -8px; font-size: 1rem; }
 
@@ -123,6 +140,85 @@ input[readonly] { background-color: #f0f0f0; }
 #searchRecordResults table thead { position: sticky; top: 0; z-index: 3; }
 #searchRecordResults table td { border: 1px solid #ddd; padding: 5px; text-align: center; white-space: nowrap; }
 #searchRecordResults table tr:hover td { background: #e8d5ff; cursor: pointer; }
+
+/* ===================================================
+   تحسينات جدول عدد الحيوانات المحصنة - عرض متأقلم مع الصفحة
+   =================================================== */
+#maxAnimalsResults {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 550px;
+  width: 100%;
+}
+
+#maxAnimalsResults table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 800px;
+}
+
+#maxAnimalsResults table th {
+  background: #27ae60;
+  color: white;
+  border: 1px solid #1e8449;
+  padding: 10px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+#maxAnimalsResults table td {
+  border: 1px solid #ddd;
+  padding: 8px 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* تلوين الصفوف بشكل متناوب */
+#maxAnimalsResults table tr:nth-child(even) td {
+  background: #eafaf1;
+}
+
+/* تأثير التمرير على الصفوف */
+#maxAnimalsResults table tr:hover td {
+  background: #c8e6d9;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+/* تذييل الجدول */
+#maxAnimalsResults table tfoot td {
+  background: #27ae60;
+  color: #000;
+  font-weight: bold;
+  border: 1px solid #1e8449;
+  padding: 8px 6px;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
+/* تنسيق عمود رقم الهاتف في الجدول */
+#maxAnimalsResults table td:first-child,
+#maxAnimalsResults table th:first-child {
+  position: sticky;
+  right: 0;
+  background: inherit;
+  z-index: 1;
+}
+
+#maxAnimalsResults table th:first-child {
+  background: #27ae60;
+  z-index: 3;
+}
+
+#maxAnimalsResults table td:first-child {
+  font-weight: bold;
+  color: #1e8449;
+}
 
 #allTotalResults table, #maxAnimalsResults table { width: 100%; border-collapse: collapse; min-width: 600px; }
 #allTotalResults table th, #maxAnimalsResults table th {
@@ -147,7 +243,12 @@ input[readonly] { background-color: #f0f0f0; }
   .main-container { flex-direction: column; }
   .search-record-grid, .all-total-date-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 600px) { .search-record-grid, .all-total-date-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 600px) {
+  .search-record-grid, .all-total-date-grid { grid-template-columns: 1fr; }
+  #maxAnimalsResults table { font-size: 11px; min-width: 550px; }
+  #maxAnimalsResults table th, #maxAnimalsResults table td { padding: 5px 3px; }
+}
 </style>
 </head>
 <body>
@@ -268,12 +369,14 @@ input[readonly] { background-color: #f0f0f0; }
       <div id="allTotalResults"></div>
     </div>
 
-    <!-- بطاقة الحيوانات المحصنة -->
+    <!-- بطاقة الحيوانات المحصنة - مع تحسين العرض -->
     <div id="maxAnimalsCard">
       <h3>عدد الحيوانات المحصنة</h3>
-      <p style="text-align:center; font-size:16px; color:#555; margin:-4px 0 10px 0;">يتم عرض عدد الحيوانات المحصنة لكل نوع حيوان. يمكن البحث برقم هاتف محدد أو تركه فارغاً لعرض الكل.</p>
+      <p style="text-align:center; font-size:14px; color:#555; margin:-4px 0 10px 0;">
+        يتم عرض عدد الحيوانات المحصنة لكل نوع حيوان. يمكن البحث برقم هاتف محدد أو تركه فارغاً لعرض الكل.
+      </p>
       <div class="all-total-date-grid">
-        <div class="sr-field"><label>رقم الهاتف (اختياري)</label><input type="text" id="maPhone"></div>
+        <div class="sr-field"><label>رقم الهاتف (اختياري)</label><input type="text" id="maPhone" placeholder="أدخل رقم الهاتف للبحث"></div>
         <div class="sr-field"><label>من تاريخ</label><input type="date" id="maDateFrom"></div>
         <div class="sr-field"><label>إلى تاريخ</label><input type="date" id="maDateTo"></div>
       </div>
@@ -306,22 +409,15 @@ function saveApiUrl() {
   document.getElementById("setupOverlay").style.display = "none";
   init();
 }
-  function selectCaseFromSearch(caseNumber) {
-  // العودة للواجهة الرئيسية
+
+function selectCaseFromSearch(caseNumber) {
   showMainView();
-  
-  // وضع رقم الحالة في الحقل العلوي
   document.getElementById('caseNumber').value = caseNumber;
-  
-  // تحديث حقل copyingdata (المخفي) إذا كان مستخدماً للتحديث
   document.getElementById('copyingdata').value = caseNumber;
-  
-  // تشغيل دالة البحث لجلب البيانات
   searchCase();
-  
-  // رسالة تأكيد (اختياري)
   showMessage('تم تحميل الحالة رقم: ' + caseNumber, false, 'info');
 }
+
 function changeApiUrl() {
   document.getElementById("apiUrlInput").value = API_URL;
   document.getElementById("setupOverlay").style.display = "flex";
@@ -440,7 +536,7 @@ async function fetchBreederData(phone) {
 }
   
 // ===================================================
-// Data loading - تعديل دالة عرض بيانات التحصين
+// Data loading - عرض بيانات التحصين
 // ===================================================
 async function fetchVaccinationDataByPhone(phone, showWarning) {
   var container = document.getElementById('vaccinationDataDisplay');
@@ -453,17 +549,14 @@ async function fetchVaccinationDataByPhone(phone, showWarning) {
       return;
     }
 
-    // فحص الشهر الحالي
     var now = new Date(), curMonth = now.getMonth(), curYear = now.getFullYear();
     var hasCurrentMonthRecord = false;
     var dateColumnIndex = 0;
-    var caseNumberColumnIndex = -1; // للعثور على عمود رقم الحالة
+    var caseNumberColumnIndex = -1;
     
     if (res.headers) {
       var di = res.headers.findIndex(function(h) { return h && (h.includes('تاريخ') || h.toLowerCase().includes('date')); });
       if (di !== -1) dateColumnIndex = di;
-      
-      // البحث عن عمود رقم الحالة
       caseNumberColumnIndex = res.headers.findIndex(function(h) { 
         return h && (h.includes('رقم الحالة') || h.includes('case') || h.includes('Case Number')); 
       });
@@ -477,12 +570,11 @@ async function fetchVaccinationDataByPhone(phone, showWarning) {
       setTimeout(function() { showMessage('تمت إضافة بيانات لهذا المربي خلال الشهر الحالي، يُرجى تحديث البيانات بدلاً من حفظ حالة جديدة', true); }, 500);
     }
 
-    // بناء جدول مع إمكانية النقر على الصفوف
     var html = '<table style="width:100%;border-collapse:collapse;font-size:12px;cursor:pointer;"><thead><tr>';
     (res.headers || []).forEach(function(h) { 
       html += '<th style="border:1px solid #ccc;padding:4px;background:#e6f7ff;text-align:center;">' + (h || '') + '</th>'; 
     });
-    html += '</tr></thead><tbody>';
+    html += '</td></thead><tbody>';
     
     res.rows.forEach(function(row, rowIndex) {
       var rowStyle = '';
@@ -492,7 +584,6 @@ async function fetchVaccinationDataByPhone(phone, showWarning) {
           rowStyle = ' style="background:#fff3cd;"'; 
       }
       
-      // إضافة معرف فريد للصف ودالة النقر
       var caseNum = (caseNumberColumnIndex !== -1 && row[caseNumberColumnIndex]) ? row[caseNumberColumnIndex] : '';
       var rowId = 'vacc-row-' + rowIndex;
       
@@ -500,8 +591,6 @@ async function fetchVaccinationDataByPhone(phone, showWarning) {
       
       row.forEach(function(c, colIndex) {
         var cellValue = c || '';
-        
-        // تنسيق عمود التاريخ ليظهر التاريخ فقط (yyyy-mm-dd)
         if (colIndex === dateColumnIndex && cellValue) {
           try {
             var d = new Date(cellValue);
@@ -511,20 +600,18 @@ async function fetchVaccinationDataByPhone(phone, showWarning) {
           } catch(e) {}
         }
         
-        // تنسيق خاص لعمود رقم الحالة (جعله يبدو قابلاً للنقر)
         var cellStyle = 'border:1px solid #ccc;padding:4px;text-align:center;';
         if (colIndex === caseNumberColumnIndex && cellValue) {
           cellStyle += 'color:#00b8d9;font-weight:bold;text-decoration:underline;';
         }
         
-        html += '<td style="' + cellStyle + '">' + cellValue + '</td>';
+        html += '<td style="' + cellStyle + '">' + cellValue + '</table>';
       });
       
       html += '</tr>';
     });
     html += '</tbody></table>';
     
-    // إضافة CSS للتأثير عند المرور على الصف
     html += '<style>' +
       '.vaccination-row:hover { background-color: #e6f7ff !important; transition: background-color 0.2s; }' +
       '.vaccination-row { transition: background-color 0.2s; }' +
@@ -537,70 +624,21 @@ async function fetchVaccinationDataByPhone(phone, showWarning) {
   }
 }
 
-// ===================================================
-// دالة جديدة: اختيار صف من جدول التحصين
-// ===================================================
 function selectVaccinationRow(rowElement) {
   var caseNumber = rowElement.getAttribute('data-case-number');
-  
   if (!caseNumber || caseNumber === '') {
     showMessage('لم يتم العثور على رقم الحالة في هذا الصف', true);
     return;
   }
-  
-  // نسخ رقم الحالة إلى الحقل العلوي
   document.getElementById('caseNumber').value = caseNumber;
-  
-  // تحديث حقل copyingdata (المخفي) للتحديث
   document.getElementById('copyingdata').value = caseNumber;
-  
-  // تمرير الصفحة لأعلى لرؤية حقل البحث
   document.getElementById('caseNumber').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  
-  // تفعيل دالة البحث تلقائياً
   searchCase();
-  
-  // إضافة تأثير بصري على الحقل
   var caseInput = document.getElementById('caseNumber');
   caseInput.style.backgroundColor = '#e6f7ff';
   setTimeout(function() {
     caseInput.style.backgroundColor = '';
   }, 500);
-  
-  showMessage('تم اختيار الحالة رقم: ' + caseNumber, false, 'info');
-}
-
-  
-// ===================================================
-// دالة جديدة: اختيار صف من جدول التحصين
-// ===================================================
-function selectVaccinationRow(rowElement) {
-  var caseNumber = rowElement.getAttribute('data-case-number');
-  
-  if (!caseNumber || caseNumber === '') {
-    showMessage('لم يتم العثور على رقم الحالة في هذا الصف', true);
-    return;
-  }
-  
-  // نسخ رقم الحالة إلى الحقل العلوي
-  document.getElementById('caseNumber').value = caseNumber;
-  
-  // تحديث حقل copyingdata (المخفي) للتحديث
-  document.getElementById('copyingdata').value = caseNumber;
-  
-  // تمرير الصفحة لأعلى لرؤية حقل البحث
-  document.getElementById('caseNumber').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  
-  // تفعيل دالة البحث تلقائياً
-  searchCase();
-  
-  // إضافة تأثير بصري على الحقل
-  var caseInput = document.getElementById('caseNumber');
-  caseInput.style.backgroundColor = '#e6f7ff';
-  setTimeout(function() {
-    caseInput.style.backgroundColor = '';
-  }, 500);
-  
   showMessage('تم اختيار الحالة رقم: ' + caseNumber, false, 'info');
 }
 
@@ -736,7 +774,7 @@ function showSubView(cardId) {
 }
 
 // ===================================================
-// Search records (with colored two-row header)
+// Search records
 // ===================================================
 function clearSearchRecordForm() {
   ['srCaseNumber','srPhone','srName','srPossession','srRegion','srCivil','srDateFrom','srDateTo']
@@ -768,9 +806,7 @@ async function doSearchVaccinationRecords() {
     }
     document.getElementById('srResultCount').textContent = 'عدد النتائج: ' + res.rows.length + ' سجل';
 
-    // === تصميم الصفّين الملونين ===
     var html = '<table><thead>';
-    // الصف الأول
     html += '<tr>';
     html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;vertical-align:middle;">م</th>';
     html += '<th colspan="5" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;">بيانات المربي</th>';
@@ -785,7 +821,6 @@ async function doSearchVaccinationRecords() {
     html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;font-size:10px;">تاريخ الإدخال</th>';
     html += '</tr>';
 
-    // الصف الثاني
     html += '<tr>';
     var sub2 = [
       {t:'رقم الهاتف',bg:'#d9b3e8',c:'#3b0056',bc:'#b380cc'},{t:'اسم المربي',bg:'#d9b3e8',c:'#3b0056',bc:'#b380cc'},
@@ -800,9 +835,8 @@ async function doSearchVaccinationRecords() {
       {t:'أغنام',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'},{t:'جمال',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'},
     ];
     sub2.forEach(function(s) { html += '<th style="background:'+s.bg+';color:'+s.c+';border:1px solid '+s.bc+';padding:5px 4px;">'+s.t+'</th>'; });
-    html += '</tr></thead><tbody>';
+    html += '</table></thead><tbody>';
 
-    // ترتيب الأعمدة
     var colOrder = [
       {idx:1,bg:''},{idx:2,bg:''},{idx:3,bg:''},{idx:4,bg:''},{idx:5,bg:''},
       {idx:7,bg:'#edf4fb'},{idx:6,bg:'#edf4fb'},
@@ -813,21 +847,15 @@ async function doSearchVaccinationRecords() {
       {idx:22,bg:''},{idx:23,bg:''},{idx:24,bg:''},{idx:25,bg:''}
     ];
 
-     res.rows.forEach(function(row, index) {
-      var caseNum = row[0]; // رقم الحالة في العمود الأول
+    res.rows.forEach(function(row, index) {
+      var caseNum = row[0];
       var rowBg = (index % 2 !== 0) ? ' background:#f5eeff;' : '';
       
-            html += '<tr style="' + rowBg + ' cursor:pointer;" onclick="selectCaseFromSearch(\'' + caseNum + '\')" title="انقر لتحميل هذه الحالة">';
-      
-      // المسلسل
+      html += '<tr style="' + rowBg + ' cursor:pointer;" onclick="selectCaseFromSearch(\'' + caseNum + '\')" title="انقر لتحميل هذه الحالة">';
       html += '<td style="border:1px solid #ddd;padding:5px;text-align:center;">' + (index + 1) + '</td>';
-      
-      // رقم الحالة - قابل للنقر مع تنسيق مميز
       html += '<td style="border:1px solid #ddd;padding:5px;text-align:center;cursor:pointer;color:#9b59b6;font-weight:bold;text-decoration:underline;" ' +
-              'onclick="selectCaseFromSearch(\'' + caseNum + '\')" title="انقر لتحميل الحالة">' + 
-              caseNum + '</td>';
+              'onclick="selectCaseFromSearch(\'' + caseNum + '\')" title="انقر لتحميل الحالة">' + caseNum + '</td>';
       
-      // باقي الأعمدة حسب colOrder
       colOrder.forEach(function(col) {
         var val = (row[col.idx] !== null && row[col.idx] !== undefined && row[col.idx] !== '') ? row[col.idx] : '-';
         var bg = col.bg ? 'background:' + col.bg + ';' : '';
@@ -860,7 +888,7 @@ async function doGetAllTotal() {
     var res = await callApi("getAllTotalVaccinatedAnimals", { filters: filters });
     if (!res.success || !res.rows || res.rows.length === 0) { div.innerHTML = '<p style="text-align:center;color:#e65050;">لا توجد بيانات</p>'; return; }
     document.getElementById('atResultCount').textContent = 'إجمالي السجلات: ' + res.recordCount;
-    var html = '<table><thead><tr><th>م</th><th>نوع اللقاح</th><th>أغنام</th><th>ماعز</th><th>أبقار</th><th>جمل</th><th>خيول</th><th>الإجمالي</th></tr></thead><tbody>';
+    var html = '</table><thead><tr><th>م</th><th>نوع اللقاح</th><th>أغنام</th><th>ماعز</th><th>أبقار</th><th>جمل</th><th>خيول</th><th>الإجمالي</th></tr></thead><tbody>';
     res.rows.forEach(function(row, i) { html += '<tr><td>' + (i+1) + '</td>' + row.map(function(c) { return '<td>' + (c||'0') + '</td>'; }).join('') + '</tr>'; });
     html += '</tbody>';
     if (res.totals) { html += '<tfoot><tr><td colspan="2">الإجمالي الكلي</td>' + res.totals.map(function(t) { return '<td>' + (t||0) + '</td>'; }).join('') + '</tr></tfoot>'; }
@@ -871,7 +899,7 @@ async function doGetAllTotal() {
 }
 
 // ===================================================
-// Max animals
+// Max animals - مع تحسين عرض الجدول ليتناسب مع كامل الصفحة
 // ===================================================
 function clearMaxAnimalsForm() {
   ['maPhone','maDateFrom','maDateTo'].forEach(function(id) { document.getElementById(id).value = ''; });
@@ -889,17 +917,71 @@ async function doGetMaxAnimals() {
     var res = await callApi("getMaxAnimalsPerBreeder", { filters: filters });
     if (!res.success || !res.rows || res.rows.length === 0) { div.innerHTML = '<p style="text-align:center;color:#e65050;">لا توجد بيانات</p>'; return; }
     document.getElementById('maResultCount').textContent = 'عدد المربين: ' + res.recordCount;
-    var html = '<table><thead><tr>' + (res.headers||[]).map(function(h) { return '<th>' + (h||'') + '</th>'; }).join('') + '</tr></thead><tbody>';
+    
+    // بناء الجدول بعرض متأقلم مع كامل الصفحة
+    var html = '<div style="overflow-x:auto; width:100%;">';
+    html += '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
+    
+    // رأس الجدول
+    html += '<thead>';
+    html += '<tr>';
+    (res.headers || []).forEach(function(h, idx) { 
+      var style = '';
+      if (idx === 0) style = ' position:sticky; right:0; background:#27ae60; z-index:3;';
+      html += '<th style="background:#27ae60; color:white; border:1px solid #1e8449; padding:10px 8px; white-space:nowrap;' + style + '">' + (h || '') + '</th>'; 
+    });
+    html += '</tr>';
+    html += '</thead>';
+    
+    // جسم الجدول
+    html += '<tbody>';
     res.rows.forEach(function(row, idx) {
-      var bg = (idx%2!==0) ? ' style="background:#eafaf1;"' : '';
-      html += '<tr' + bg + '>' + row.map(function(c) { return '<td style="border:1px solid #ddd;padding:5px;">' + (c!=null?c:'') + '</td>'; }).join('') + '</tr>';
+      var bg = (idx % 2 !== 0) ? ' background:#eafaf1;' : '';
+      html += '<tr style="' + bg + ' cursor:pointer;" onclick="selectBreederByPhone(\'' + (row[1] || '') + '\')" title="انقر لعرض بيانات هذا المربي">';
+      row.forEach(function(c, colIdx) {
+        var style = 'border:1px solid #ddd; padding:8px 6px; text-align:center; white-space:nowrap;';
+        if (colIdx === 0) style += ' position:sticky; right:0; background:inherit; font-weight:bold; color:#1e8449;';
+        if (colIdx === 1) style += ' cursor:pointer; color:#9b59b6; font-weight:bold; text-decoration:underline;';
+        html += '<td style="' + style + '">' + (c !== null && c !== undefined && c !== '' ? c : '-') + '</td>';
+      });
+      html += '</tr>';
     });
     html += '</tbody>';
-    if (res.totals && res.totals.length) { html += '<tfoot><tr><td colspan="2">الإجمالي الكلي</td>' + res.totals.map(function(t) { return '<td>' + (t||0) + '</td>'; }).join('') + '</tr></tfoot>'; }
+    
+    // تذييل الجدول (الإجمالي)
+    if (res.totals && res.totals.length) { 
+      html += '<tfoot>';
+      html += '<tr>';
+      html += '<td colspan="2" style="background:#27ae60; color:#000; font-weight:bold; border:1px solid #1e8449; padding:8px 6px; position:sticky; bottom:0; z-index:2;">الإجمالي الكلي</td>';
+      res.totals.forEach(function(t) { 
+        html += '<td style="background:#27ae60; color:#000; font-weight:bold; border:1px solid #1e8449; padding:8px 6px; text-align:center;">' + (t || 0) + '</td>'; 
+      });
+      html += '</tr>';
+      html += '</tfoot>';
+    }
+    
     html += '</table>';
+    html += '</div>';
     div.innerHTML = html;
-  } catch (err) { div.innerHTML = '<p style="color:red;">خطأ: ' + err.message + '</p>'; }
+    
+  } catch (err) { 
+    div.innerHTML = '<p style="color:red; text-align:center;">خطأ: ' + err.message + '</p>'; 
+  }
   finally { btn.textContent = orig; btn.disabled = false; }
+}
+
+// دالة لاختيار مربي من جدول الحيوانات المحصنة
+function selectBreederByPhone(phone) {
+  if (!phone || phone === '-') {
+    showMessage('رقم الهاتف غير متوفر', true);
+    return;
+  }
+  showMainView();
+  document.getElementById('phoneInput').value = phone;
+  fetchBreederData(phone);
+  fetchVaccinationDataByPhone(phone, false);
+  showMessage('تم تحميل بيانات المربي رقم: ' + phone, false, 'info');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===================================================
@@ -925,7 +1007,6 @@ function bindEvents() {
   document.getElementById('maSearchBtn').onclick = doGetMaxAnimals;
   document.getElementById('maClearBtn').onclick = clearMaxAnimalsForm;
 
-  // حقل الهاتف
   document.getElementById('phoneInput').onchange = function() {
     fetchBreederData(this.value);
     fetchVaccinationDataByPhone(this.value, true);
@@ -933,7 +1014,6 @@ function bindEvents() {
   document.getElementById('phoneInput').addEventListener('input', function() { if (!this.value.trim()) clearTopBarMessage(); });
   document.getElementById('phoneInput').addEventListener('blur', function() { if (!this.value.trim()) clearTopBarMessage(); });
 
-  // رقم الحالة
   var caseInput = document.getElementById('caseNumber');
   caseInput.addEventListener('input', function() { var v = this.value.trim(); if (v) document.getElementById('copyingdata').value = v; });
   caseInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); searchCase(); } });
@@ -945,7 +1025,6 @@ function bindEvents() {
     }
   });
 
-  // Enter في حقول البحث
   ['srCaseNumber','srPhone','srName','srPossession','srRegion','srCivil','srDateFrom','srDateTo'].forEach(function(id) {
     document.getElementById(id).addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); doSearchVaccinationRecords(); } });
   });
