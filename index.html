@@ -414,7 +414,7 @@ async function fetchBreederData(phone) {
     }
   } catch (err) { showMessage("خطأ: " + err.message, true); }
 }
-
+  
 async function fetchVaccinationDataByPhone(phone, showWarning) {
   var container = document.getElementById('vaccinationDataDisplay');
   if (!phone) { container.innerHTML = ''; return; }
@@ -442,20 +442,48 @@ async function fetchVaccinationDataByPhone(phone, showWarning) {
       setTimeout(function() { showMessage('تمت إضافة بيانات لهذا المربي خلال الشهر الحالي، يُرجى تحديث البيانات بدلاً من حفظ حالة جديدة', true); }, 500);
     }
 
-    // بناء جدول
+    // بناء جدول مع توسيط البيانات وعرض التاريخ فقط
     var html = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr>';
-    (res.headers || []).forEach(function(h) { html += '<th style="border:1px solid #ccc;padding:4px;background:#e6f7ff;">' + (h || '') + '</th>'; });
+    (res.headers || []).forEach(function(h) { 
+      html += '<th style="border:1px solid #ccc;padding:4px;background:#e6f7ff;text-align:center;">' + (h || '') + '</th>'; 
+    });
     html += '</tr></thead><tbody>';
+    
     res.rows.forEach(function(row) {
       var rowStyle = '';
-      if (row[dateColumnIndex]) { var rd = new Date(row[dateColumnIndex]); if (!isNaN(rd.getTime()) && rd.getMonth() === curMonth && rd.getFullYear() === curYear) rowStyle = ' style="background:#fff3cd;"'; }
+      if (row[dateColumnIndex]) { 
+        var rd = new Date(row[dateColumnIndex]); 
+        if (!isNaN(rd.getTime()) && rd.getMonth() === curMonth && rd.getFullYear() === curYear) 
+          rowStyle = ' style="background:#fff3cd;"'; 
+      }
       html += '<tr' + rowStyle + '>';
-      row.forEach(function(c) { html += '<td style="border:1px solid #ccc;padding:4px;">' + (c || '') + '</td>'; });
+      
+      row.forEach(function(c, colIndex) {
+        var cellValue = c || '';
+        
+        // تنسيق عمود التاريخ ليظهر التاريخ فقط (yyyy-mm-dd)
+        if (colIndex === dateColumnIndex && cellValue) {
+          try {
+            var d = new Date(cellValue);
+            if (!isNaN(d.getTime())) {
+             cellValue = d.toLocaleDateString('ar-SA'); // 17/04/2026
+// أو
+cellValue = d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear(); // 17/4/2026
+            }
+          } catch(e) {}
+        }
+        
+        html += '<td style="border:1px solid #ccc;padding:4px;text-align:center;">' + cellValue + '</td>';
+      });
+      
       html += '</tr>';
     });
     html += '</tbody></table>';
     container.innerHTML = html;
-  } catch (err) { container.innerHTML = '<p style="color:red;">خطأ: ' + err.message + '</p>'; }
+    
+  } catch (err) { 
+    container.innerHTML = '<p style="color:red;text-align:center;">خطأ: ' + err.message + '</p>'; 
+  }
 }
 
 // ===================================================
